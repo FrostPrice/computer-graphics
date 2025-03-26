@@ -60,6 +60,9 @@ int main(int argc, char **argv)
 	glutSpecialFunc(keyboard_special);
 	glutTimerFunc(delay, redraw, 0);
 
+	glEnable(GL_DEPTH_TEST); // Habilita o culling de profundidade
+	glDepthFunc(GL_LEQUAL);	 // Define o tipo de teste de profundidade
+
 	glutMainLoop();
 
 	return 0;
@@ -138,6 +141,9 @@ Poligono criar_cubo(double cx, double cy, double cz, double lado)
 	return cubo;
 }
 
+// TODO: Adicionar opção para rotacionar em torno do eixo X, Y e Z
+// TODO: Ajustar o resize da janela
+// TODO:
 void desenhar(const Poligono &poligono)
 {
 	glColor3f(0.0, 0.0, 0.0);
