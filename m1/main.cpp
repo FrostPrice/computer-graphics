@@ -37,9 +37,14 @@ int main(int argc, char **argv)
 {
 	cubo = criar_cubo(0, 0, 0, 60); // centralizado
 
+	GLsizei height = 600;
+	GLsizei width = 600;
+
+	GLfloat aspect = (GLfloat)height / (GLfloat)width;
+
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-	glutInitWindowSize(600, 600);
+	glutInitWindowSize(width, height);
 	glutCreateWindow("Cubo 3D - Wireframe");
 
 	glClearColor(1.0, 1.0, 1.0, 1.0);
@@ -47,7 +52,7 @@ int main(int argc, char **argv)
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45.0, 1.0, 1.0, 500.0);
+	gluPerspective(45.0, aspect, 1.0, 500.0);
 	glMatrixMode(GL_MODELVIEW);
 
 	glutDisplayFunc(display);
@@ -76,6 +81,16 @@ void display(void)
 
 void redraw(int value)
 {
+	GLsizei height = 600;
+	GLsizei width = 600;
+
+	if (height == 0)
+		height = 1;
+	GLfloat aspect = (GLfloat)width / (GLfloat)height;
+
+	glViewport(0, 0, width, height);
+
+	gluPerspective(45.0, aspect, 1.0, 500.0);
 	glutPostRedisplay();
 	glutTimerFunc(delay, redraw, 0);
 }
@@ -207,11 +222,11 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case 'q':
 	case 'Q':
-		rotacionar(cubo, -0.1); // rotaciona para esquerda
+		rotacionar(cubo, 0.1); // rotaciona para esquerda
 		break;
 	case 'e':
 	case 'E':
-		rotacionar(cubo, 0.1); // rotaciona para direita
+		rotacionar(cubo, -0.1); // rotaciona para direita
 		break;
 	case ' ':							// espaço
 		cubo = criar_cubo(0, 0, 0, 60); // reset para estado inicial
