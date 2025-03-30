@@ -14,6 +14,7 @@ This project implements a simple 3D cube using OpenGL (in C++), where basic tran
 ### 🔼 Arrow Keys (Translation)
 
 - **↑ / ↓ / ← / →**: Move the cube along the X and Y axes
+- **z / x**: Move the cube along the Z-axis (front and back)
 
 ### 🔁 Rotation
 
