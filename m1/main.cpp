@@ -21,7 +21,7 @@ struct Polygon3D
 
 Polygon3D create_cube(double cx, double cy, double cz, double side);
 void draw(const Polygon3D &polygon);
-void translate(Polygon3D &polygon, double distance, double angle);
+void translate(Polygon3D &polygon, double distance, double angle, double dz);
 void scale_polygon(Polygon3D &polygon, double sx, double sy, double sz = 1.0);
 void rotate(Polygon3D &polygon, double angle, char axis);
 void display();
@@ -130,18 +130,20 @@ void draw(const Polygon3D &polygon)
 	glEnd();
 }
 
-void translate(Polygon3D &polygon, double distance, double angle)
+void translate(Polygon3D &polygon, double distance, double angle, double dz)
 {
 	double dx = cos(angle) * distance;
 	double dy = sin(angle) * distance;
 
 	std::get<0>(polygon.position) += dx;
 	std::get<1>(polygon.position) += dy;
+	std::get<2>(polygon.position) += dz;
 
 	for (auto &v : polygon.vertices)
 	{
 		std::get<0>(v) += dx;
 		std::get<1>(v) += dy;
+		std::get<2>(v) += dz;
 	}
 }
 
@@ -234,6 +236,14 @@ void keyboard(unsigned char key, int x, int y)
 		rotate(cube, -0.1, 'z');
 		break;
 
+	case 'z': // Move into the screen (negative Z)
+		translate(cube, 0, 0, -10);
+		break;
+
+	case 'x': // Move out of the screen (positive Z)
+		translate(cube, 0, 0, 10);
+		break;
+
 	case '+':
 	case '=': // Scale up the cube by 10%
 		scale_polygon(cube, 1.1, 1.1, 1.1);
@@ -255,19 +265,19 @@ void keyboard_special(int key, int x, int y)
 	switch (key)
 	{
 	case GLUT_KEY_UP: // Move upward along Y-axis
-		translate(cube, 10, M_PI / 2);
+		translate(cube, 10, M_PI / 2, 0);
 		break;
 
 	case GLUT_KEY_DOWN: // Move downward along Y-axis
-		translate(cube, 10, 3 * M_PI / 2);
+		translate(cube, 10, 3 * M_PI / 2, 0);
 		break;
 
 	case GLUT_KEY_LEFT: // Move left along X-axis
-		translate(cube, 10, M_PI);
+		translate(cube, 10, M_PI, 0);
 		break;
 
 	case GLUT_KEY_RIGHT: // Move right along X-axis
-		translate(cube, 10, 0);
+		translate(cube, 10, 0, 0);
 		break;
 	}
 }
