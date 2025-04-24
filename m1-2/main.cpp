@@ -186,7 +186,7 @@ void initLighting()
 	}
 }
 
-void drawElephant()
+void draw3dObject()
 {
 	glPushMatrix();
 	glTranslatef(translateX, translateY, -105.0f);
@@ -211,8 +211,8 @@ void display()
 			glDisable(GL_LIGHT0 + i);
 	}
 
-	glColor3f(0.8, 0.5, 0.4);
-	drawElephant();
+	glColor3f(0.6, 0.6, 0.6);
+	draw3dObject();
 
 	glutSwapBuffers();
 }
