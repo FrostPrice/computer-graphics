@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <GL/freeglut.h>
+#include <math.h>
 using namespace std;
 
 // Globals
