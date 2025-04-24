@@ -7,19 +7,21 @@
 #include <math.h>
 using namespace std;
 
-// Globals
+// Global variables
 unsigned int model;
-vector<vector<float>> vertices;
-vector<vector<float>> normals;
-vector<vector<float>> texcoords;
-vector<vector<int>> faces;
-vector<vector<int>> face_normals;
+vector<vector<float>> vertices;	  // Vertex positions
+vector<vector<float>> normals;	  // Vertex normals
+vector<vector<float>> texcoords;  // Texture coordinates (not used in rendering)
+vector<vector<int>> faces;		  // Faces as indices into the vertices
+vector<vector<int>> face_normals; // Indices of normals for each face
 
+// Transformation and lighting states
 float rotY = 0.0f, rotX = 0.0f;
 float scale = 1.0f;
-float translateX = 0.0f, translateY = 0.0f;
-bool lights[3] = {true, true, true};
+float translateX = 0.0f, translateY = 0.0f, translateZ = -105.0f; // Z = Initial camera distance
+bool lights[3] = {true, true, true};							  // Toggle for 3 lights
 
+// Load a .obj file and parse vertices, normals, and face indices
 void loadObj(string fname)
 {
 	vertices.clear();
@@ -36,6 +38,7 @@ void loadObj(string fname)
 	}
 
 	string line;
+	// Variables to compute bounding box for centering
 	float minX = INFINITY, minY = INFINITY, minZ = INFINITY;
 	float maxX = -INFINITY, maxY = -INFINITY, maxZ = -INFINITY;
 
@@ -45,6 +48,7 @@ void loadObj(string fname)
 		string type;
 		ss >> type;
 
+		// Vertex position
 		if (type == "v")
 		{
 			float x, y, z;
@@ -57,12 +61,12 @@ void loadObj(string fname)
 			minZ = min(minZ, z);
 			maxZ = max(maxZ, z);
 		}
+		// Vertex normal
 		else if (type == "vn")
 		{
 			float x, y, z;
 			ss >> x >> y >> z;
-			// Normalize normal vector
-			float len = sqrt(x * x + y * y + z * z);
+			float len = sqrt(x * x + y * y + z * z); // Normalize the normal
 			if (len > 0.0f)
 			{
 				x /= len;
@@ -71,12 +75,14 @@ void loadObj(string fname)
 			}
 			normals.push_back({x, y, z});
 		}
+		// Texture coordinate
 		else if (type == "vt")
 		{
 			float u, v;
 			ss >> u >> v;
 			texcoords.push_back({u, v});
 		}
+		// Face
 		else if (type == "f")
 		{
 			vector<int> vIndices, nIndices;
@@ -87,25 +93,18 @@ void loadObj(string fname)
 				size_t slash1 = token.find('/');
 				size_t slash2 = token.find('/', slash1 + 1);
 
+				// Parse face format: v, v/vt, v//vn, or v/vt/vn
 				if (slash1 == string::npos)
-				{
-					// f v
 					vi = stoi(token) - 1;
-				}
 				else if (slash2 == string::npos)
-				{
-					// f v/vt
 					vi = stoi(token.substr(0, slash1)) - 1;
-				}
 				else if (slash2 == slash1 + 1)
 				{
-					// f v//vn
 					vi = stoi(token.substr(0, slash1)) - 1;
 					ni = stoi(token.substr(slash2 + 1)) - 1;
 				}
 				else
 				{
-					// f v/vt/vn
 					vi = stoi(token.substr(0, slash1)) - 1;
 					ni = stoi(token.substr(slash2 + 1)) - 1;
 				}
@@ -114,7 +113,7 @@ void loadObj(string fname)
 				nIndices.push_back(ni);
 			}
 
-			// Fan triangulation for polygons with > 3 vertices
+			// Convert polygon to triangle fan
 			for (size_t i = 1; i + 1 < vIndices.size(); ++i)
 			{
 
@@ -136,7 +135,7 @@ void loadObj(string fname)
 		v[2] -= centerZ;
 	}
 
-	// Generate display list
+	// Create OpenGL display list for fast rendering
 	model = glGenLists(1);
 	glNewList(model, GL_COMPILE);
 	glBegin(GL_TRIANGLES);
@@ -146,10 +145,8 @@ void loadObj(string fname)
 		{
 			int vi = faces[i][j];
 			int ni = face_normals[i][j];
-
 			if (ni >= 0 && ni < (int)normals.size())
 				glNormal3fv(normals[ni].data());
-
 			if (vi >= 0 && vi < (int)vertices.size())
 				glVertex3fv(vertices[vi].data());
 			else
@@ -160,32 +157,28 @@ void loadObj(string fname)
 	glEndList();
 }
 
+// Set up 3-point lighting
 void initLighting()
 {
-
 	glEnable(GL_NORMALIZE);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_DEPTH_TEST);
-
 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 
-	// Distinct positions to better visualize each light's contribution
+	// Light positions: front, left, and top
 	GLfloat light_pos[3][4] = {
-		{0.0f, 0.0f, 150.0f, 1.0f},	 // Light 0: front
-		{-150.0f, 0.0f, 0.0f, 1.0f}, // Light 1: left side
-		{0.0f, 150.0f, 0.0f, 1.0f}	 // Light 2: top
-	};
+		{0.0f, 0.0f, 150.0f, 1.0f},
+		{-150.0f, 0.0f, 0.0f, 1.0f},
+		{0.0f, 150.0f, 0.0f, 1.0f}};
 	GLfloat ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};
-	GLfloat diffuse[] = {0.7f, 0.7f, 0.7f, 1.0f};
 	GLfloat specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
 
-	// Unique RGB colors per light
+	// RGB lighting for each light
 	GLfloat diffuse_colors[3][4] = {
-		{0.8f, 0.1f, 0.1f, 1.0f}, // Red
-		{0.1f, 0.8f, 0.1f, 1.0f}, // Green
-		{0.1f, 0.1f, 0.8f, 1.0f}  // Blue
-	};
+		{0.8f, 0.1f, 0.1f, 1.0f},
+		{0.1f, 0.8f, 0.1f, 1.0f},
+		{0.1f, 0.1f, 0.8f, 1.0f}};
 
 	for (int i = 0; i < 3; ++i)
 	{
@@ -198,6 +191,7 @@ void initLighting()
 	}
 }
 
+// Render the 3D model
 void draw3dObject()
 {
 	glPushMatrix();
@@ -229,6 +223,7 @@ void display()
 	glutSwapBuffers();
 }
 
+// Adjust projection on window resize
 void reshape(int w, int h)
 {
 	if (h == 0)
@@ -240,12 +235,25 @@ void reshape(int w, int h)
 	glMatrixMode(GL_MODELVIEW);
 }
 
+// Redraw periodically
 void timer(int value)
 {
 	glutPostRedisplay();
 	glutTimerFunc(16, timer, 0);
 }
 
+// Handles keyboard input for transforming the model and toggling lights
+// CONTROLS:
+// 'w', 's' - rotate up/down
+// 'a', 'd' - rotate left/right
+// '+', '-' - zoom in/out
+// 'i', 'k' - translate vertically
+// 'j', 'l' - translate horizontally
+// 'f' - Fix lighting in world space (default)
+// 'm' - Make lighting follow model rotation and position
+// '1', '2', '3' - toggle lights 0–2 (red, green, blue)
+// 'SPACE' - reset all transformations
+// 'ESC' - exit program
 void keyboard(unsigned char key, int x, int y)
 {
 	switch (key)
@@ -294,9 +302,14 @@ void keyboard(unsigned char key, int x, int y)
 	}
 }
 
+// Mouse state tracking
 int lastMouseX, lastMouseY;
 bool leftButtonDown = false, rightButtonDown = false;
 
+// Handles mouse button input for rotating/translating the model or zooming
+// Left button  - activates rotation when dragging
+// Right button - activates translation when dragging
+// Scroll up/down - zoom in/out
 void mouseButton(int button, int state, int x, int y)
 {
 	if (button == GLUT_LEFT_BUTTON)
@@ -307,13 +320,16 @@ void mouseButton(int button, int state, int x, int y)
 	lastMouseX = x;
 	lastMouseY = y;
 
-	// Mouse wheel for zooming
-	if (button == 3) // Scroll up
+	// Zoom in/out with scroll wheel
+	if (button == 3)
 		scale += 0.1f;
-	else if (button == 4) // Scroll down
+	else if (button == 4)
 		scale = max(0.1f, scale - 0.1f);
 }
 
+// Handles mouse motion when a button is held down
+// Left drag - rotates the model
+// Right drag - translates the model
 void motion(int x, int y)
 {
 	int dx = x - lastMouseX;
@@ -334,6 +350,7 @@ void motion(int x, int y)
 	lastMouseY = y;
 }
 
+// Entry point
 int main(int argc, char **argv)
 {
 	glutInit(&argc, argv);
@@ -341,6 +358,7 @@ int main(int argc, char **argv)
 	glutInitWindowSize(900, 600);
 	glutCreateWindow("OBJ Loader - 3D Object with Lighting");
 
+	// Register callbacks
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyboard);
@@ -349,6 +367,7 @@ int main(int argc, char **argv)
 	glutTimerFunc(16, timer, 0);
 
 	initLighting();
+
 	if (argc < 2)
 	{
 		std::cerr << "Usage: " << argv[0] << " <path_to_obj_file>\n";
