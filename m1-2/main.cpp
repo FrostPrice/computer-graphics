@@ -35,6 +35,9 @@ void loadObj(string fname)
 	}
 
 	string line;
+	float minX = INFINITY, minY = INFINITY, minZ = INFINITY;
+	float maxX = -INFINITY, maxY = -INFINITY, maxZ = -INFINITY;
+
 	while (getline(file, line))
 	{
 		istringstream ss(line);
@@ -46,11 +49,25 @@ void loadObj(string fname)
 			float x, y, z;
 			ss >> x >> y >> z;
 			vertices.push_back({x, y, z});
+			minX = min(minX, x);
+			maxX = max(maxX, x);
+			minY = min(minY, y);
+			maxY = max(maxY, y);
+			minZ = min(minZ, z);
+			maxZ = max(maxZ, z);
 		}
 		else if (type == "vn")
 		{
 			float x, y, z;
 			ss >> x >> y >> z;
+			// Normalize normal vector
+			float len = sqrt(x * x + y * y + z * z);
+			if (len > 0.0f)
+			{
+				x /= len;
+				y /= len;
+				z /= len;
+			}
 			normals.push_back({x, y, z});
 		}
 		else if (type == "vt")
@@ -61,22 +78,85 @@ void loadObj(string fname)
 		}
 		else if (type == "f")
 		{
-			vector<int> face_indices;
-			vector<int> normal_indices;
-			string vert_str;
-
-			for (int i = 0; i < 3; i++)
+			vector<int> vIndices, nIndices;
+			string token;
+			while (ss >> token)
 			{
-	model = glGenLists(1);
-	glNewList(model, GL_COMPILE);
-				glVertex3fv(vertices[vi].data());
+				int vi = -1, ni = -1;
+				size_t slash1 = token.find('/');
+				size_t slash2 = token.find('/', slash1 + 1);
+
+				if (slash1 == string::npos)
+				{
+					// f v
+					vi = stoi(token) - 1;
+				}
+				else if (slash2 == string::npos)
+				{
+					// f v/vt
+					vi = stoi(token.substr(0, slash1)) - 1;
+				}
+				else if (slash2 == slash1 + 1)
+				{
+					// f v//vn
+					vi = stoi(token.substr(0, slash1)) - 1;
+					ni = stoi(token.substr(slash2 + 1)) - 1;
+				}
+				else
+				{
+					// f v/vt/vn
+					vi = stoi(token.substr(0, slash1)) - 1;
+					ni = stoi(token.substr(slash2 + 1)) - 1;
+				}
+
+				vIndices.push_back(vi);
+				nIndices.push_back(ni);
+			}
+
+			// Fan triangulation for polygons with > 3 vertices
+			for (size_t i = 1; i + 1 < vIndices.size(); ++i)
+			{
+
+				faces.push_back({vIndices[0], vIndices[i], vIndices[i + 1]});
+				face_normals.push_back({nIndices[0], nIndices[i], nIndices[i + 1]});
 			}
 		}
-		glEnd();
 	}
-	glEndList();
-
 	file.close();
+
+	// Center the model
+	float centerX = (minX + maxX) / 2.0f;
+	float centerY = (minY + maxY) / 2.0f;
+	float centerZ = (minZ + maxZ) / 2.0f;
+	for (auto &v : vertices)
+	{
+		v[0] -= centerX;
+		v[1] -= centerY;
+		v[2] -= centerZ;
+	}
+
+	// Generate display list
+	model = glGenLists(1);
+	glNewList(model, GL_COMPILE);
+	glBegin(GL_TRIANGLES);
+	for (size_t i = 0; i < faces.size(); ++i)
+	{
+		for (int j = 0; j < 3; ++j)
+		{
+			int vi = faces[i][j];
+			int ni = face_normals[i][j];
+
+			if (ni >= 0 && ni < (int)normals.size())
+				glNormal3fv(normals[ni].data());
+
+			if (vi >= 0 && vi < (int)vertices.size())
+				glVertex3fv(vertices[vi].data());
+			else
+				printf("Invalid vertex index: %d\n", vi);
+		}
+	}
+	glEnd();
+	glEndList();
 }
 
 void initLighting()
