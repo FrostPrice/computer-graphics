@@ -162,25 +162,37 @@ void loadObj(string fname)
 
 void initLighting()
 {
+
+	glEnable(GL_NORMALIZE);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_DEPTH_TEST);
 
-	GLfloat light_pos[3][4] = {
-		{50.0f, 50.0f, 100.0f, 1.0f},
-		{-50.0f, 50.0f, 100.0f, 1.0f},
-		{0.0f, -50.0f, 100.0f, 1.0f}};
+	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 
+	// Distinct positions to better visualize each light's contribution
+	GLfloat light_pos[3][4] = {
+		{0.0f, 0.0f, 150.0f, 1.0f},	 // Light 0: front
+		{-150.0f, 0.0f, 0.0f, 1.0f}, // Light 1: left side
+		{0.0f, 150.0f, 0.0f, 1.0f}	 // Light 2: top
+	};
 	GLfloat ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};
 	GLfloat diffuse[] = {0.7f, 0.7f, 0.7f, 1.0f};
 	GLfloat specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+
+	// Unique RGB colors per light
+	GLfloat diffuse_colors[3][4] = {
+		{0.8f, 0.1f, 0.1f, 1.0f}, // Red
+		{0.1f, 0.8f, 0.1f, 1.0f}, // Green
+		{0.1f, 0.1f, 0.8f, 1.0f}  // Blue
+	};
 
 	for (int i = 0; i < 3; ++i)
 	{
 		GLenum light = GL_LIGHT0 + i;
 		glLightfv(light, GL_POSITION, light_pos[i]);
 		glLightfv(light, GL_AMBIENT, ambient);
-		glLightfv(light, GL_DIFFUSE, diffuse);
+		glLightfv(light, GL_DIFFUSE, diffuse_colors[i]);
 		glLightfv(light, GL_SPECULAR, specular);
 		glEnable(light);
 	}
