@@ -7,7 +7,7 @@
 using namespace std;
 
 // Globals
-unsigned int elefante;
+unsigned int model;
 vector<vector<float>> vertices;
 vector<vector<float>> normals;
 vector<vector<float>> texcoords;
@@ -67,33 +67,8 @@ void loadObj(string fname)
 
 			for (int i = 0; i < 3; i++)
 			{
-				ss >> vert_str;
-				size_t pos1 = vert_str.find("/");
-				size_t pos2 = vert_str.find("/", pos1 + 1);
-
-				int vIndex = stoi(vert_str.substr(0, pos1)) - 1;
-				int nIndex = stoi(vert_str.substr(pos2 + 1)) - 1;
-
-				face_indices.push_back(vIndex);
-				normal_indices.push_back(nIndex);
-			}
-			faces.push_back(face_indices);
-			face_normals.push_back(normal_indices);
-		}
-	}
-
-	elefante = glGenLists(1);
-	glNewList(elefante, GL_COMPILE);
-	{
-		glBegin(GL_TRIANGLES);
-		for (size_t i = 0; i < faces.size(); ++i)
-		{
-			for (int j = 0; j < 3; ++j)
-			{
-				int vi = faces[i][j];
-				int ni = face_normals[i][j];
-				if (ni >= 0 && ni < normals.size())
-					glNormal3fv(normals[ni].data());
+	model = glGenLists(1);
+	glNewList(model, GL_COMPILE);
 				glVertex3fv(vertices[vi].data());
 			}
 		}
@@ -137,7 +112,7 @@ void drawElephant()
 	glScalef(scale, scale, scale);
 	glRotatef(rotX, 1, 0, 0);
 	glRotatef(rotY, 0, 1, 0);
-	glCallList(elefante);
+	glCallList(model);
 	glPopMatrix();
 }
 
@@ -271,7 +246,7 @@ int main(int argc, char **argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(900, 600);
-	glutCreateWindow("OBJ Loader - Elephant with Lighting");
+	glutCreateWindow("OBJ Loader - 3D Object with Lighting");
 
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
