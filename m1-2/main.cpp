@@ -16,7 +16,7 @@ vector<vector<int>> faces;		  // Faces as indices into the vertices
 vector<vector<int>> face_normals; // Indices of normals for each face
 
 // Transformation and lighting states
-float rotY = 0.0f, rotX = 0.0f;
+float rotY = 0.0f, rotX = 0.0f, rotZ = 0.0f; // Rotation angles
 float scale = 1.0f;
 float translateX = 0.0f, translateY = 0.0f, translateZ = -105.0f; // Z = Initial camera distance
 bool lights[3] = {true, true, true};							  // Toggle for 3 lights
@@ -199,6 +199,7 @@ void draw3dObject()
 	glScalef(scale, scale, scale);
 	glRotatef(rotX, 1, 0, 0);
 	glRotatef(rotY, 0, 1, 0);
+	glRotatef(rotZ, 0, 0, 1);
 	glCallList(model);
 	glPopMatrix();
 }
@@ -302,6 +303,12 @@ void keyboard(unsigned char key, int x, int y)
 	case 's':
 		rotX += 5;
 		break;
+	case 'z': // Rotate counter-clockwise around Z-axis
+		rotZ -= 5;
+		break;
+	case 'x': // Rotate clockwise around Z-axis
+		rotZ += 5;
+		break;
 	case '+':
 		scale += 0.1f;
 		break;
@@ -320,6 +327,13 @@ void keyboard(unsigned char key, int x, int y)
 	case 'k':
 		translateY -= 2.0f;
 		break;
+	case 'u': // Translate closer (zoom in)
+		translateZ += 2.0f;
+		break;
+	case 'o': // Translate further (zoom out)
+		translateZ -= 2.0f;
+		break;
+
 	case 'f':
 		lightingFollowsModel = false;
 		cout << "Lighting set to fixed (world space)" << endl;
@@ -338,7 +352,7 @@ void keyboard(unsigned char key, int x, int y)
 		lights[2] = !lights[2];
 		break;
 	case ' ': // Reset all transformations
-		rotX = rotY = 0.0f;
+		rotX = rotY = rotZ = 0.0f;
 		translateX = translateY = 0.0f;
 		translateZ = -105.0f;
 		scale = 1.0f;
