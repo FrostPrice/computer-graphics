@@ -20,6 +20,7 @@ float rotY = 0.0f, rotX = 0.0f;
 float scale = 1.0f;
 float translateX = 0.0f, translateY = 0.0f, translateZ = -105.0f; // Z = Initial camera distance
 bool lights[3] = {true, true, true};							  // Toggle for 3 lights
+bool lightingFollowsModel = false;								  // false = fixed, true = follows model
 
 // Load a .obj file and parse vertices, normals, and face indices
 void loadObj(string fname)
@@ -116,7 +117,6 @@ void loadObj(string fname)
 			// Convert polygon to triangle fan
 			for (size_t i = 1; i + 1 < vIndices.size(); ++i)
 			{
-
 				faces.push_back({vIndices[0], vIndices[i], vIndices[i + 1]});
 				face_normals.push_back({nIndices[0], nIndices[i], nIndices[i + 1]});
 			}
@@ -195,7 +195,7 @@ void initLighting()
 void draw3dObject()
 {
 	glPushMatrix();
-	glTranslatef(translateX, translateY, -105.0f);
+	glTranslatef(translateX, translateY, translateZ);
 	glScalef(scale, scale, scale);
 	glRotatef(rotX, 1, 0, 0);
 	glRotatef(rotY, 0, 1, 0);
@@ -208,13 +208,45 @@ void display()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 
-	// Toggle lights
-	for (int i = 0; i < 3; ++i)
+	// Reapply lighting positions based on mode
+	if (lightingFollowsModel)
 	{
-		if (lights[i])
-			glEnable(GL_LIGHT0 + i);
-		else
-			glDisable(GL_LIGHT0 + i);
+		// Position lights *after* transformation so they follow the model
+		glPushMatrix();
+		glTranslatef(translateX, translateY, translateZ);
+		glRotatef(rotX, 1, 0, 0);
+		glRotatef(rotY, 0, 1, 0);
+
+		GLfloat light_pos[3][4] = {
+			{0.0f, 0.0f, 150.0f, 1.0f},
+			{-150.0f, 0.0f, 0.0f, 1.0f},
+			{0.0f, 150.0f, 0.0f, 1.0f}};
+		for (int i = 0; i < 3; ++i)
+		{
+			// toggle lights based on user input
+			if (lights[i])
+			{
+				glEnable(GL_LIGHT0 + i);
+				glLightfv(GL_LIGHT0 + i, GL_POSITION, light_pos[i]);
+			}
+			else
+			{
+				glDisable(GL_LIGHT0 + i);
+			}
+		}
+		glPopMatrix();
+	}
+	else
+	{
+		// Default: lights stay fixed in world space
+		for (int i = 0; i < 3; ++i)
+		{
+			// toggle lights based on user input
+			if (lights[i])
+				glEnable(GL_LIGHT0 + i);
+			else
+				glDisable(GL_LIGHT0 + i);
+		}
 	}
 
 	glColor3f(0.6, 0.6, 0.6);
@@ -288,6 +320,14 @@ void keyboard(unsigned char key, int x, int y)
 	case 'k':
 		translateY -= 2.0f;
 		break;
+	case 'f':
+		lightingFollowsModel = false;
+		cout << "Lighting set to fixed (world space)" << endl;
+		break;
+	case 'm':
+		lightingFollowsModel = true;
+		cout << "Lighting set to follow model" << endl;
+		break;
 	case '1':
 		lights[0] = !lights[0];
 		break;
@@ -297,8 +337,14 @@ void keyboard(unsigned char key, int x, int y)
 	case '3':
 		lights[2] = !lights[2];
 		break;
+	case ' ': // Reset all transformations
+		rotX = rotY = 0.0f;
+		translateX = translateY = 0.0f;
+		translateZ = -105.0f;
+		scale = 1.0f;
+		break;
 	case 27:
-		exit(0); // ESC
+		exit(0); // ESC key
 	}
 }
 
