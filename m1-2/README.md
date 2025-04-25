@@ -8,55 +8,72 @@ This project allows to render complex 3D geometry with shading and interaction.
 
 ## 📦 Features
 
-- ✅ OBJ file loading with:
+- ✅ Loads `.obj` files:
   - Vertices (`v`)
   - Normals (`vn`)
   - Texture coordinates (`vt`)
-  - Faces (`f`)
-- ✅ Rendered as filled **triangles** (not just wireframe)
-- ✅ **Phong lighting model** with 3 configurable light sources
-- ✅ Interactive **rotation**, **scaling**, and **translation**
-- ✅ Lights can be toggled on/off individually
+  - Faces (`f`) (supports triangulation from polygons)
+- ✅ Renders as filled **triangles**
+- ✅ **3-point lighting** (Phong model: ambient + diffuse + specular)
+- ✅ Mouse & keyboard interaction:
+  - Rotate, translate, scale, zoom
+  - Reset transformations
+- ✅ Toggle individual lights (RGB)
+- ✅ Lighting mode switch: **fixed** or **follows the model**
 
 ---
 
 ## 💡 Lighting
 
-- 3 static point light sources in the scene
-- Each light has:
+- Three configurable light sources:
+  - Red (front), Green (left), Blue (top)
+- Each light supports:
   - Ambient
   - Diffuse
   - Specular components
-- Toggle lights with keys `1`, `2`, and `3`
+- Toggle with keys: `1`, `2`, `3`
+- Lighting modes:
+  - `f`: Fixed in world space
+  - `m`: Attached to model (follows rotation/position)
 
 ---
 
 ## 🎮 Controls
 
-### 🔁 Rotation
+### 🧭 Rotation
 
-- `W / S`: Rotate up/down (X-axis)
-- `A / D`: Rotate left/right (Y-axis)
+- `W / S` — Rotate model up/down (X-axis)
+- `A / D` — Rotate model left/right (Y-axis)
+- `U / O` — Rotate model counter-/clockwise (Z-axis)
 
 ### ✋ Translation
 
-- `I / K`: Move up/down
-- `J / L`: Move left/right
+- `I / K` — Move model up/down
+- `J / L` — Move model left/right
+- `Z / X` — Move model closer/further (Z-axis)
 
-### 🔍 Scaling
+### 🔍 Zoom / Scale
 
-- `+`: Scale up
-- `-`: Scale down
+- `+` — Zoom in
+- `-` — Zoom out
+- Mouse scroll — Zoom in/out
 
-### 💡 Light Toggle
+### 💡 Lighting
 
-- `1`: Toggle Light 1
-- `2`: Toggle Light 2
-- `3`: Toggle Light 3
+- `1`, `2`, `3` — Toggle Red, Green, and Blue lights
+- `F` — Lighting fixed in world space
+- `M` — Lighting follows model
+
+### 🖱️ Mouse Interactions
+
+- **Left-drag** — Rotate model
+- **Right-drag** — Translate model
+- **Scroll wheel** — Zoom in/out
 
 ### ⏹ Other
 
-- `ESC`: Exit the program
+- `SPACE` — Reset all transformations (position, rotation, zoom)
+- `ESC` — Exit the program
 
 ---
 
