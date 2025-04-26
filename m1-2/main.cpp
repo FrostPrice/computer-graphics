@@ -384,15 +384,15 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case '1':
 		lights[0] = !lights[0];
-		cout << "Toggled Light 0 (Red): " << (lights[0] ? "ON" : "OFF") << endl;
+		cout << "Toggled Light 0 (Specular - Red): " << (lights[0] ? "ON" : "OFF") << endl;
 		break;
 	case '2':
 		lights[1] = !lights[1];
-		cout << "Toggled Light 1 (Green): " << (lights[1] ? "ON" : "OFF") << endl;
+		cout << "Toggled Light 1 (Diffuse - Green): " << (lights[1] ? "ON" : "OFF") << endl;
 		break;
 	case '3':
 		lights[2] = !lights[2];
-		cout << "Toggled Light 2 (Blue): " << (lights[2] ? "ON" : "OFF") << endl;
+		cout << "Toggled Light 2 (Ambient - Blue): " << (lights[2] ? "ON" : "OFF") << endl;
 		break;
 	case ' ':
 		rotX = rotY = rotZ = 0.0f;
