@@ -162,33 +162,51 @@ void initLighting()
 {
 	glEnable(GL_NORMALIZE);
 	glEnable(GL_LIGHTING);
-	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_DEPTH_TEST);
 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 
+	glDisable(GL_COLOR_MATERIAL); // Disable color-based materials — it will be set manually!
+
 	// Light positions: front, left, and top
 	GLfloat light_pos[3][4] = {
-		{0.0f, 0.0f, 150.0f, 1.0f},
-		{-150.0f, 0.0f, 0.0f, 1.0f},
-		{0.0f, 150.0f, 0.0f, 1.0f}};
-	GLfloat ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};
-	GLfloat specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+		{0.0f, 0.0f, 150.0f, 1.0f},	 // Front (Z+)
+		{-150.0f, 0.0f, 0.0f, 1.0f}, // Left (X-)
+		{0.0f, 150.0f, 0.0f, 1.0f}	 // Top (Y+)
+	};
 
-	// RGB lighting for each light
-	GLfloat diffuse_colors[3][4] = {
-		{0.8f, 0.1f, 0.1f, 1.0f},
-		{0.1f, 0.8f, 0.1f, 1.0f},
-		{0.1f, 0.1f, 0.8f, 1.0f}};
+	// Light 0 (Red) - primarily specular
+	GLfloat ambient0[] = {0.05f, 0.0f, 0.0f, 1.0f};
+	GLfloat diffuse0[] = {0.2f, 0.0f, 0.0f, 1.0f};
+	GLfloat specular0[] = {1.0f, 0.0f, 0.0f, 1.0f};
 
-	for (int i = 0; i < 3; ++i)
-	{
-		GLenum light = GL_LIGHT0 + i;
-		glLightfv(light, GL_POSITION, light_pos[i]);
-		glLightfv(light, GL_AMBIENT, ambient);
-		glLightfv(light, GL_DIFFUSE, diffuse_colors[i]);
-		glLightfv(light, GL_SPECULAR, specular);
-		glEnable(light);
-	}
+	// Light 1 (Green) - primarily diffuse
+	GLfloat ambient1[] = {0.0f, 0.05f, 0.0f, 1.0f};
+	GLfloat diffuse1[] = {0.0f, 1.0f, 0.0f, 1.0f};
+	GLfloat specular1[] = {0.0f, 0.2f, 0.0f, 1.0f};
+
+	// Light 2 (Blue) - primarily ambient
+	GLfloat ambient2[] = {0.0f, 0.0f, 1.0f, 1.0f};
+	GLfloat diffuse2[] = {0.0f, 0.0f, 0.2f, 1.0f};
+	GLfloat specular2[] = {0.0f, 0.0f, 0.2f, 1.0f};
+
+	// Set up each light source
+	glLightfv(GL_LIGHT0, GL_POSITION, light_pos[0]);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient0);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse0);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, specular0);
+	glEnable(GL_LIGHT0);
+
+	glLightfv(GL_LIGHT1, GL_POSITION, light_pos[1]);
+	glLightfv(GL_LIGHT1, GL_AMBIENT, ambient1);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse1);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, specular1);
+	glEnable(GL_LIGHT1);
+
+	glLightfv(GL_LIGHT2, GL_POSITION, light_pos[2]);
+	glLightfv(GL_LIGHT2, GL_AMBIENT, ambient2);
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, diffuse2);
+	glLightfv(GL_LIGHT2, GL_SPECULAR, specular2);
+	glEnable(GL_LIGHT2);
 }
 
 // Render the 3D model
@@ -224,7 +242,6 @@ void display()
 			{0.0f, 150.0f, 0.0f, 1.0f}};
 		for (int i = 0; i < 3; ++i)
 		{
-			// toggle lights based on user input
 			if (lights[i])
 			{
 				glEnable(GL_LIGHT0 + i);
@@ -242,7 +259,6 @@ void display()
 		// Default: lights stay fixed in world space
 		for (int i = 0; i < 3; ++i)
 		{
-			// toggle lights based on user input
 			if (lights[i])
 				glEnable(GL_LIGHT0 + i);
 			else
@@ -250,7 +266,18 @@ void display()
 		}
 	}
 
-	glColor3f(0.6, 0.6, 0.6);
+	// Set manual material properties for the object
+	GLfloat mat_ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};  // How much ambient light it reflects
+	GLfloat mat_diffuse[] = {0.6f, 0.6f, 0.6f, 1.0f};  // Base color under light
+	GLfloat mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f}; // Strong specular (shiny white highlights)
+	GLfloat mat_shininess = 64.0f;					   // Sharpness of specular reflection
+
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, mat_shininess);
+
+	glColor3f(0.6f, 0.6f, 0.6f); // Object base color (still useful for color mixing)
 	draw3dObject();
 
 	glutSwapBuffers();
@@ -293,47 +320,60 @@ void keyboard(unsigned char key, int x, int y)
 	{
 	case 'a':
 		rotY -= 5;
+		cout << "Rotated left (Y-axis -5 degrees)" << endl;
 		break;
 	case 'd':
 		rotY += 5;
+		cout << "Rotated right (Y-axis +5 degrees)" << endl;
 		break;
 	case 'w':
 		rotX -= 5;
+		cout << "Rotated up (X-axis -5 degrees)" << endl;
 		break;
 	case 's':
 		rotX += 5;
+		cout << "Rotated down (X-axis +5 degrees)" << endl;
 		break;
 	case 'z': // Rotate counter-clockwise around Z-axis
 		rotZ -= 5;
+		cout << "Rotated counter-clockwise (Z-axis -5 degrees)" << endl;
 		break;
 	case 'x': // Rotate clockwise around Z-axis
 		rotZ += 5;
+		cout << "Rotated clockwise (Z-axis +5 degrees)" << endl;
 		break;
 	case '+':
 		scale += 0.1f;
+		cout << "Scaled up (current scale: " << scale << ")" << endl;
 		break;
 	case '-':
 		scale = max(0.1f, scale - 0.1f);
+		cout << "Scaled down (current scale: " << scale << ")" << endl;
 		break;
 	case 'j':
 		translateX -= 2.0f;
+		cout << "Translated left (X-axis -2 units)" << endl;
 		break;
 	case 'l':
 		translateX += 2.0f;
+		cout << "Translated right (X-axis +2 units)" << endl;
 		break;
 	case 'i':
 		translateY += 2.0f;
+		cout << "Translated up (Y-axis +2 units)" << endl;
 		break;
 	case 'k':
 		translateY -= 2.0f;
+		cout << "Translated down (Y-axis -2 units)" << endl;
 		break;
 	case 'u': // Translate closer (zoom in)
 		translateZ += 2.0f;
+		cout << "Moved closer (Z-axis +2 units)" << endl;
 		break;
 	case 'o': // Translate further (zoom out)
 		translateZ -= 2.0f;
+		cout << "Moved further (Z-axis -2 units)" << endl;
 		break;
-
 	case 'f':
 		lightingFollowsModel = false;
 		cout << "Lighting set to fixed (world space)" << endl;
@@ -344,21 +384,26 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case '1':
 		lights[0] = !lights[0];
+		cout << "Toggled Light 0 (Red): " << (lights[0] ? "ON" : "OFF") << endl;
 		break;
 	case '2':
 		lights[1] = !lights[1];
+		cout << "Toggled Light 1 (Green): " << (lights[1] ? "ON" : "OFF") << endl;
 		break;
 	case '3':
 		lights[2] = !lights[2];
+		cout << "Toggled Light 2 (Blue): " << (lights[2] ? "ON" : "OFF") << endl;
 		break;
-	case ' ': // Reset all transformations
+	case ' ':
 		rotX = rotY = rotZ = 0.0f;
 		translateX = translateY = 0.0f;
 		translateZ = -105.0f;
 		scale = 1.0f;
+		cout << "Reset all transformations" << endl;
 		break;
 	case 27:
-		exit(0); // ESC key
+		cout << "Exiting program (ESC key)" << endl;
+		exit(0);
 	}
 }
 
