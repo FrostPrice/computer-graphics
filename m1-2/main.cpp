@@ -175,25 +175,25 @@ void initLighting()
 	};
 
 	// Light 0 (Red) - primarily specular
-	// GLfloat ambient0[] = {0.05f, 0.0f, 0.0f, 1.0f}; // Low ambient for red light - For testing
-	// GLfloat diffuse0[] = {0.2f, 0.0f, 0.0f, 1.0f}; // Low diffuse for red light - For testing
-	GLfloat ambient0[] = {0.0f, 0.0f, 0.0f, 1.0f};
-	GLfloat diffuse0[] = {0.0f, 0.0f, 0.0f, 1.0f};
 	GLfloat specular0[] = {1.0f, 0.0f, 0.0f, 1.0f};
+	GLfloat ambient0[] = {0.05f, 0.0f, 0.0f, 1.0f}; // Low ambient for red light
+	GLfloat diffuse0[] = {0.2f, 0.0f, 0.0f, 1.0f};	// Low diffuse for red light
+	// GLfloat ambient0[] = {0.0f, 0.0f, 0.0f, 1.0f}; // No ambient for red light
+	// GLfloat diffuse0[] = {0.0f, 0.0f, 0.0f, 1.0f}; // No diffuse for red light
 
 	// Light 1 (Green) - primarily diffuse
-	// GLfloat ambient1[] = {0.0f, 0.05f, 0.0f, 1.0f}; // Low ambient for green light - For testing
-	// GLfloat diffuse1[] = {0.0f, 0.2f, 0.0f, 1.0f}; // Low diffuse for green light - For testing
-	GLfloat ambient1[] = {0.0f, 0.0f, 0.0f, 1.0f};
 	GLfloat diffuse1[] = {0.0f, 1.0f, 0.0f, 1.0f};
-	GLfloat specular1[] = {0.0f, 0.0f, 0.0f, 1.0f};
+	GLfloat ambient1[] = {0.0f, 0.05f, 0.0f, 1.0f}; // Low ambient for green light
+	GLfloat specular1[] = {0.0f, 0.2f, 0.0f, 1.0f}; // Low specular for green light
+	// GLfloat ambient1[] = {0.0f, 0.0f, 0.0f, 1.0f};	// No ambient for green light
+	// GLfloat specular1[] = {0.0f, 0.0f, 0.0f, 1.0f}; // No specular for green light
 
 	// Light 2 (Blue) - primarily ambient
-	// GLfloat diffuse2[] = {0.0f, 0.0f, 0.2f, 1.0f}; // Low diffuse for blue light - For testing
-	// GLfloat specular2[] = {0.0f, 0.0f, 0.2f, 1.0f}; // Low specular for blue light - For testing
 	GLfloat ambient2[] = {0.0f, 0.0f, 1.0f, 1.0f};
-	GLfloat diffuse2[] = {0.0f, 0.0f, 0.0f, 1.0f};
-	GLfloat specular2[] = {0.0f, 0.0f, 0.0f, 1.0f};
+	GLfloat diffuse2[] = {0.0f, 0.0f, 0.2f, 1.0f};	// Low diffuse for blue light
+	GLfloat specular2[] = {0.0f, 0.0f, 0.2f, 1.0f}; // Low specular for blue light
+	// GLfloat diffuse2[] = {0.0f, 0.0f, 0.0f, 1.0f}; // No diffuse for blue light
+	// GLfloat specular2[] = {0.0f, 0.0f, 0.0f, 1.0f}; // No specular for blue light
 
 	// Set up each light source
 	glLightfv(GL_LIGHT0, GL_POSITION, light_pos[0]);
