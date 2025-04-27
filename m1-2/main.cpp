@@ -312,9 +312,11 @@ void timer(int value)
 // CONTROLS:
 // 'w', 's' - rotate up/down
 // 'a', 'd' - rotate left/right
+// 'z', 'x' - rotate counter-clockwise/clockwise around Z-axis
 // '+', '-' - zoom in/out
 // 'i', 'k' - translate vertically
 // 'j', 'l' - translate horizontally
+// 'u', 'o' - zoom in/out (move closer/further)
 // 'f' - Fix lighting in world space (default)
 // 'm' - Make lighting follow model rotation and position
 // '1', '2', '3' - toggle lights 0–2 (red, green, blue)
