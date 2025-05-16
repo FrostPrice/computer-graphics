@@ -9,11 +9,13 @@ using namespace std;
 
 // Global variables
 unsigned int model;
-vector<vector<float>> vertices;	  // Vertex positions
-vector<vector<float>> normals;	  // Vertex normals
-vector<vector<float>> texcoords;  // Texture coordinates (not used in rendering)
-vector<vector<int>> faces;		  // Faces as indices into the vertices
-vector<vector<int>> face_normals; // Indices of normals for each face
+unsigned int textureID;				// Texture handle
+vector<vector<float>> vertices;		// Vertex positions
+vector<vector<float>> normals;		// Vertex normals
+vector<vector<int>> face_texcoords; // Face texture coordinates
+vector<vector<float>> texcoords;	// Texture coordinates
+vector<vector<int>> faces;			// Faces as indices into the vertices
+vector<vector<int>> face_normals;	// Indices of normals for each face
 
 // Transformation and lighting states
 float rotY = 0.0f, rotX = 0.0f, rotZ = 0.0f; // Rotation angles
@@ -21,6 +23,61 @@ float scale = 1.0f;
 float translateX = 0.0f, translateY = 0.0f, translateZ = -105.0f; // Z = Initial camera distance
 bool lights[3] = {true, true, true};							  // Toggle for 3 lights
 bool lightingFollowsModel = false;								  // false = fixed, true = follows model
+
+// Load a .bmp texture (24-bit only)
+struct BitMapFile
+{
+	int sizeX;
+	int sizeY;
+	unsigned char *data;
+};
+
+BitMapFile *getBMPData(string filename)
+{
+	BitMapFile *bmp = new BitMapFile;
+	unsigned int size, offset, headerSize;
+
+	ifstream infile(filename.c_str(), ios::binary);
+	if (!infile.is_open())
+	{
+		cerr << "Erro ao abrir o BMP: " << filename << endl;
+		return nullptr;
+	}
+
+	infile.seekg(10);
+	infile.read((char *)&offset, 4);
+	infile.seekg(14);
+	infile.read((char *)&headerSize, 4);
+	infile.seekg(18);
+	infile.read((char *)&bmp->sizeX, 4);
+	infile.read((char *)&bmp->sizeY, 4);
+
+	size = bmp->sizeX * bmp->sizeY * 3;
+	bmp->data = new unsigned char[size];
+	infile.seekg(offset);
+	infile.read((char *)bmp->data, size);
+
+	// Convert from BGR to RGB
+	for (int i = 0; i < size; i += 3)
+		swap(bmp->data[i], bmp->data[i + 2]);
+
+	return bmp;
+}
+
+void loadTexture(char *filename)
+{
+
+	BitMapFile *image = getBMPData(filename);
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image->sizeX, image->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, image->data);
+	delete[] image->data;
+	delete image;
+}
 
 // Load a .obj file and parse vertices, normals, and face indices
 void loadObj(string fname)
@@ -30,6 +87,7 @@ void loadObj(string fname)
 	texcoords.clear();
 	faces.clear();
 	face_normals.clear();
+	face_texcoords.clear();
 
 	ifstream file(fname);
 	if (!file.is_open())
@@ -86,19 +144,22 @@ void loadObj(string fname)
 		// Face
 		else if (type == "f")
 		{
-			vector<int> vIndices, nIndices;
+			vector<int> vIndices, nIndices, tIndices;
 			string token;
 			while (ss >> token)
 			{
-				int vi = -1, ni = -1;
+				int vi = -1, ti = -1, ni = -1;
 				size_t slash1 = token.find('/');
 				size_t slash2 = token.find('/', slash1 + 1);
 
-				// Parse face format: v, v/vt, v//vn, or v/vt/vn
+				// Parse formatos: v, v/vt, v//vn ou v/vt/vn
 				if (slash1 == string::npos)
 					vi = stoi(token) - 1;
 				else if (slash2 == string::npos)
+				{
 					vi = stoi(token.substr(0, slash1)) - 1;
+					ti = stoi(token.substr(slash1 + 1)) - 1;
+				}
 				else if (slash2 == slash1 + 1)
 				{
 					vi = stoi(token.substr(0, slash1)) - 1;
@@ -107,21 +168,25 @@ void loadObj(string fname)
 				else
 				{
 					vi = stoi(token.substr(0, slash1)) - 1;
+					ti = stoi(token.substr(slash1 + 1, slash2 - slash1 - 1)) - 1;
 					ni = stoi(token.substr(slash2 + 1)) - 1;
 				}
 
 				vIndices.push_back(vi);
+				tIndices.push_back(ti);
 				nIndices.push_back(ni);
 			}
 
-			// Convert polygon to triangle fan
+			// Convertendo polígonos para triângulos
 			for (size_t i = 1; i + 1 < vIndices.size(); ++i)
 			{
 				faces.push_back({vIndices[0], vIndices[i], vIndices[i + 1]});
+				face_texcoords.push_back({tIndices[0], tIndices[i], tIndices[i + 1]});
 				face_normals.push_back({nIndices[0], nIndices[i], nIndices[i + 1]});
 			}
 		}
 	}
+
 	file.close();
 
 	// Center the model
@@ -137,24 +202,31 @@ void loadObj(string fname)
 
 	// Create OpenGL display list for fast rendering
 	model = glGenLists(1);
+
 	glNewList(model, GL_COMPILE);
+
+	// Enable textures
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	glEnable(GL_TEXTURE_2D);
+
 	glBegin(GL_TRIANGLES);
 	for (size_t i = 0; i < faces.size(); ++i)
 	{
-		for (int j = 0; j < 3; ++j)
+		for (size_t j = 0; j < faces[i].size(); ++j)
 		{
 			int vi = faces[i][j];
-			int ni = face_normals[i][j];
-			if (ni >= 0 && ni < (int)normals.size())
-				glNormal3fv(normals[ni].data());
-			if (vi >= 0 && vi < (int)vertices.size())
+			int ti = face_texcoords[i][j];
+
+			if (ti >= 0 && ti < texcoords.size())
+				glTexCoord2f(texcoords[ti][0], texcoords[ti][1]);
+
+			if (vi >= 0 && vi < vertices.size())
 				glVertex3fv(vertices[vi].data());
-			else
-				printf("Invalid vertex index: %d\n", vi);
 		}
 	}
 	glEnd();
 	glEndList();
+	cout << "Number of coordenates for texture found in .obj: " << texcoords.size() << endl;
 }
 
 // Set up 3-point lighting
@@ -224,6 +296,8 @@ void draw3dObject()
 	glRotatef(rotX, 1, 0, 0);
 	glRotatef(rotY, 0, 1, 0);
 	glRotatef(rotZ, 0, 0, 1);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, textureID);
 	glCallList(model);
 	glPopMatrix();
 }
@@ -283,7 +357,7 @@ void display()
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, mat_shininess);
 
-	glColor3f(0.6f, 0.6f, 0.6f); // Object base color (still useful for color mixing)
+	glColor3f(1.0f, 1.0f, 1.0f); // Object base color (set as white for texture mapping)
 	draw3dObject();
 
 	glutSwapBuffers();
@@ -481,11 +555,12 @@ int main(int argc, char **argv)
 
 	initLighting();
 
-	if (argc < 2)
+	if (argc < 3)
 	{
-		std::cerr << "Usage: " << argv[0] << " <path_to_obj_file>\n";
+		std::cerr << "Usage: " << argv[0] << " <path_to_obj_file> <path_to_bpm_texture>\n";
 		exit(1);
 	}
+	loadTexture(argv[2]);
 	loadObj(argv[1]);
 
 	glutMainLoop();
