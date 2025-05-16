@@ -84,3 +84,11 @@ Make sure you have OpenGL and GLUT installed. Then, compile the code with:
 ```bash
 g++ main.cpp -o obj_viewer -lGL -lGLU -lglut
 ```
+
+## Observations
+
+Only the following models have the vt, for texture loading:
+
+- radar.obj and radar-fixed-center-point.obj
+- mba1.obj
+- tie-fighter.obj
