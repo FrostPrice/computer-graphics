@@ -1,8 +1,8 @@
 [gd_scene load_steps=12 format=3 uid="uid://dqjq8pwmlxj5u"]
 
 [ext_resource type="Shader" uid="uid://goh0bipstsy2" path="res://shaders/spatial.gdshader" id="1_3p6k0"]
-[ext_resource type="Shader" uid="uid://bkisrj14k2xi3" path="res://metallic_with_noise_texture.gdshader" id="2_2kr4u"]
-[ext_resource type="Shader" uid="uid://4fy55nath5he" path="res://pulsating.gdshader" id="3_2kr4u"]
+[ext_resource type="Shader" uid="uid://bkisrj14k2xi3" path="res://shaders/metallic_with_noise_texture.gdshader" id="2_2kr4u"]
+[ext_resource type="Shader" uid="uid://4fy55nath5he" path="res://shaders/pulsating.gdshader" id="3_2kr4u"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_sm5sh"]
 render_priority = 0
