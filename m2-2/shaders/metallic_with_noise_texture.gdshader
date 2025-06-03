@@ -3,6 +3,7 @@ shader_type spatial;
 uniform sampler2D noise_texture;
 uniform float metallic_strength = 3.0;
 uniform float roughness_strength = 1.0;
+uniform float height_scale = 5;
 
 void fragment() {
     vec2 uv = UV;
