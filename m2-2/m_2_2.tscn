@@ -1,6 +1,6 @@
 [gd_scene load_steps=12 format=3 uid="uid://dqjq8pwmlxj5u"]
 
-[ext_resource type="Shader" uid="uid://goh0bipstsy2" path="res://shaders/spatial.gdshader" id="1_3p6k0"]
+[ext_resource type="Shader" uid="uid://goh0bipstsy2" path="res://shaders/flag-moving.gdshader" id="1_3p6k0"]
 [ext_resource type="Shader" uid="uid://bkisrj14k2xi3" path="res://shaders/metallic_with_noise_texture.gdshader" id="2_2kr4u"]
 [ext_resource type="Shader" uid="uid://4fy55nath5he" path="res://shaders/pulsating.gdshader" id="3_2kr4u"]
 
@@ -27,20 +27,16 @@ shader_parameter/noise_texture = SubResource("NoiseTexture2D_2kr4u")
 shader_parameter/metallic_strength = 3.0
 shader_parameter/roughness_strength = 1.0
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_shym2"]
-subdivide_width = 32
-subdivide_depth = 32
+[sub_resource type="SphereMesh" id="SphereMesh_5y4wb"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5y4wb"]
 render_priority = 0
 shader = ExtResource("3_2kr4u")
 shader_parameter/pulse_speed = 4.0
 shader_parameter/pulse_amplitude = 0.2
-shader_parameter/base_color = Vector3(1, 1, -0.13)
+shader_parameter/base_color = Vector3(1, 0, 0.5)
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_mh38k"]
-subdivide_width = 32
-subdivide_depth = 32
+[sub_resource type="SphereMesh" id="SphereMesh_mh38k"]
 
 [node name="m2-2" type="Node3D"]
 
@@ -51,9 +47,9 @@ mesh = SubResource("PlaneMesh_2kr4u")
 [node name="metallic_with_noise_texture" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.05089)
 material_override = SubResource("ShaderMaterial_mh38k")
-mesh = SubResource("PlaneMesh_shym2")
+mesh = SubResource("SphereMesh_5y4wb")
 
 [node name="pulsating" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4.46539)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3.36047)
 material_override = SubResource("ShaderMaterial_5y4wb")
-mesh = SubResource("PlaneMesh_mh38k")
+mesh = SubResource("SphereMesh_mh38k")
