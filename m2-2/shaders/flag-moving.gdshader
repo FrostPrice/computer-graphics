@@ -13,5 +13,5 @@ void vertex() {
 }
 
 void fragment() {
-    ALBEDO = vec3(1.0, 0, 0) * abs(wave_intensity);
+    ALBEDO = texture(flag_texture, UV).rgb * abs(wave_intensity);
 }

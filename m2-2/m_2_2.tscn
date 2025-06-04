@@ -1,7 +1,8 @@
-[gd_scene load_steps=12 format=3 uid="uid://dqjq8pwmlxj5u"]
+[gd_scene load_steps=13 format=3 uid="uid://dqjq8pwmlxj5u"]
 
 [ext_resource type="Shader" uid="uid://goh0bipstsy2" path="res://shaders/flag-moving.gdshader" id="1_3p6k0"]
 [ext_resource type="Shader" uid="uid://bkisrj14k2xi3" path="res://shaders/metallic_with_noise_texture.gdshader" id="2_2kr4u"]
+[ext_resource type="Texture2D" uid="uid://wuqrttegmtf4" path="res://textures/pirate_flag.svg" id="2_5y4wb"]
 [ext_resource type="Shader" uid="uid://4fy55nath5he" path="res://shaders/pulsating.gdshader" id="3_2kr4u"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_sm5sh"]
@@ -10,6 +11,7 @@ shader = ExtResource("1_3p6k0")
 shader_parameter/wave_amplitude = 0.1
 shader_parameter/wave_speed = 2.0
 shader_parameter/wave_frequency = 4.0
+shader_parameter/flag_texture = ExtResource("2_5y4wb")
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_2kr4u"]
 subdivide_width = 32
