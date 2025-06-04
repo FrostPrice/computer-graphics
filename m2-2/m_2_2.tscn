@@ -60,3 +60,8 @@ mesh = SubResource("SphereMesh_5y4wb")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3.36047)
 material_override = SubResource("ShaderMaterial_5y4wb")
 mesh = SubResource("SphereMesh_mh38k")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4112, 2.02818)
+omni_range = 3.0
+omni_attenuation = -4.0

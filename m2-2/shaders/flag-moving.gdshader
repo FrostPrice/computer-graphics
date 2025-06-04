@@ -3,6 +3,7 @@ shader_type spatial;
 uniform float wave_amplitude = 0.1;
 uniform float wave_speed = 2.0;
 uniform float wave_frequency = 4.0;
+uniform sampler2D flag_texture;
 
 varying float wave_intensity;
 
@@ -12,5 +13,5 @@ void vertex() {
 }
 
 void fragment() {
-    ALBEDO = vec3(1.0, 1.0, 1.0) * abs(wave_intensity);
+    ALBEDO = vec3(1.0, 0, 0) * abs(wave_intensity);
 }
