@@ -1,9 +1,25 @@
-[gd_scene load_steps=13 format=3 uid="uid://dqjq8pwmlxj5u"]
+[gd_scene load_steps=17 format=3 uid="uid://dqjq8pwmlxj5u"]
 
 [ext_resource type="Shader" uid="uid://goh0bipstsy2" path="res://shaders/flag-moving.gdshader" id="1_3p6k0"]
 [ext_resource type="Shader" uid="uid://bkisrj14k2xi3" path="res://shaders/metallic_with_noise_texture.gdshader" id="2_2kr4u"]
 [ext_resource type="Texture2D" uid="uid://wuqrttegmtf4" path="res://textures/pirate_flag.svg" id="2_5y4wb"]
 [ext_resource type="Shader" uid="uid://4fy55nath5he" path="res://shaders/pulsating.gdshader" id="3_2kr4u"]
+[ext_resource type="Script" uid="uid://ble05hhk63agx" path="res://move_light.gd" id="5_mh38k"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_mh38k"]
+sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+ground_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+
+[sub_resource type="Sky" id="Sky_shym2"]
+sky_material = SubResource("ProceduralSkyMaterial_mh38k")
+
+[sub_resource type="Environment" id="Environment_jgd01"]
+background_mode = 2
+background_energy_multiplier = 0.3
+sky = SubResource("Sky_shym2")
+tonemap_mode = 2
+ssao_enabled = true
+glow_enabled = true
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_sm5sh"]
 render_priority = 0
@@ -26,18 +42,21 @@ height = 1024
 in_3d_space = true
 seamless = true
 as_normal_map = true
-bump_strength = 20.0
+bump_strength = 10.0
 noise = SubResource("FastNoiseLite_sm5sh")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_mh38k"]
 render_priority = 0
 shader = ExtResource("2_2kr4u")
 shader_parameter/noise_texture = SubResource("NoiseTexture2D_2kr4u")
-shader_parameter/metallic_strength = 3.0
-shader_parameter/roughness_strength = 1.0
-shader_parameter/height_scale = 5.0
+shader_parameter/time_scale = 0.08
+shader_parameter/uv_scale = 3.0
+shader_parameter/distortion_strength = 0.2
+shader_parameter/metallic_strength = 1.0
+shader_parameter/roughness_strength = 0.2
+shader_parameter/height_strength = 0.1
 
-[sub_resource type="SphereMesh" id="SphereMesh_5y4wb"]
+[sub_resource type="SphereMesh" id="SphereMesh_shym2"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_5y4wb"]
 render_priority = 0
@@ -45,10 +64,14 @@ shader = ExtResource("3_2kr4u")
 shader_parameter/pulse_speed = 4.0
 shader_parameter/pulse_amplitude = 0.2
 shader_parameter/base_color = Vector3(1, 0, 0.5)
+shader_parameter/emission_boost = 1.5
 
 [sub_resource type="SphereMesh" id="SphereMesh_mh38k"]
 
 [node name="m2-2" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_jgd01")
 
 [node name="flag_ondulations" type="MeshInstance3D" parent="."]
 transform = Transform3D(-4.37114e-08, 1, -4.37114e-08, 0, -4.37114e-08, -1, -1, -4.37114e-08, 1.91069e-15, 0, 0, 0)
@@ -56,16 +79,22 @@ material_override = SubResource("ShaderMaterial_sm5sh")
 mesh = SubResource("PlaneMesh_2kr4u")
 
 [node name="metallic_with_noise_texture" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.05089)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
 material_override = SubResource("ShaderMaterial_mh38k")
-mesh = SubResource("SphereMesh_5y4wb")
+mesh = SubResource("SphereMesh_shym2")
 
 [node name="pulsating" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3.36047)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
 material_override = SubResource("ShaderMaterial_5y4wb")
 mesh = SubResource("SphereMesh_mh38k")
 
 [node name="OmniLight3D" type="OmniLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4112, 2.02818)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0903001, 1.4112, 2.02818)
+light_energy = 2.0
+shadow_enabled = true
 omni_range = 3.0
 omni_attenuation = -4.0
+script = ExtResource("5_mh38k")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 3, 1, 2)
