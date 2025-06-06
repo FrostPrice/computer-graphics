@@ -95,7 +95,6 @@ mesh = SubResource("SphereMesh_mh38k")
 
 [node name="OmniLight3D" type="OmniLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0903001, 1.4112, 2.02818)
-light_energy = 2.0
 shadow_enabled = true
 omni_range = 3.0
 omni_attenuation = -4.0
@@ -104,5 +103,5 @@ script = ExtResource("5_mh38k")
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 3, 1, 2)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+[node name="plane_floor" type="MeshInstance3D" parent="."]
 mesh = SubResource("PlaneMesh_mh38k")
