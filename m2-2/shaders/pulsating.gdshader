@@ -15,10 +15,9 @@ void fragment() {
     float brightness = abs(sin(TIME * pulse_speed));
 	ALBEDO = base_color * brightness;
 	EMISSION = vec3(
-    sin(TIME * pulse_speed * 0.5),
-    sin(TIME * pulse_speed * 0.8 + 1.0),
-    sin(TIME * pulse_speed + 2.0)
-) * pow(brightness, 2.0) * emission_boost;
-
+	    sin(TIME * pulse_speed * 0.5),
+	    sin(TIME * pulse_speed * 0.8 + 1.0),
+	    sin(TIME * pulse_speed + 2.0)
+	) * pow(brightness, 2.0) * emission_boost;
 }
 
