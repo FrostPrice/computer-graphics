@@ -1,5 +1,7 @@
 shader_type spatial;
 
+render_mode cull_disabled;
+
 uniform float wave_amplitude = 0.2;
 uniform float wave_speed = 3.0;
 uniform float wave_frequency = 6.0;
