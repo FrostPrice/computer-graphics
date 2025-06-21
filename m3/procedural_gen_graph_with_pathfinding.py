@@ -223,15 +223,26 @@ class MeshCreator:
         corridor.data.materials.append(self.materials.get_corridor_material())
     
     def create_barrier(self, x: float, y: float, z: int, dx: int = 0, dy: int = 1) -> None:
-        """Create a door near a room edge, oriented toward that room."""
-        import math
-
+        """Create a door at the edge of a room, properly positioned in the doorway."""
         spacing = self.config.room_size * self.config.room_spacing
-        loc_x = x * spacing
-        loc_y = y * spacing
+        
+        # Calculate base room position
+        room_x = round(x) * spacing
+        room_y = round(y) * spacing
+        
+        # Position door at the room edge based on direction
+        if dx != 0:
+            # Horizontal corridor - door is on the east/west edge of the room
+            loc_x = room_x + (dx * self.config.room_size / 2)
+            loc_y = room_y
+        else:
+            # Vertical corridor - door is on the north/south edge of the room
+            loc_x = room_x
+            loc_y = room_y + (dy * self.config.room_size / 2)
 
         base_z = z * (self.config.wall_height + 1)
         floor_top = self.pos_calc.get_floor_top(base_z)
+        # Position door so it extends from floor to ceiling, centered vertically
         loc_z = floor_top + self.config.wall_height / 2
 
         bpy.ops.mesh.primitive_cube_add(size=2, location=(loc_x, loc_y, loc_z))
@@ -240,27 +251,19 @@ class MeshCreator:
 
         # Handle rotation and scale by direction
         if dx != 0:
-            # Horizontal corridor
+            # Horizontal corridor - door spans the corridor width
             door.scale = (
                 self.config.wall_thickness / 2,
                 self.config.corridor_width / 2,
                 self.config.wall_height / 2,
             )
-            if dx >= 0:
-                door.rotation_euler[2] = 0            # +X
-            else:
-                door.rotation_euler[2] = math.pi      # -X
-        if dy != 0:
-            # Vertical corridor
+        else:
+            # Vertical corridor - door spans the corridor width  
             door.scale = (
                 self.config.corridor_width / 2,
                 self.config.wall_thickness / 2,
                 self.config.wall_height / 2,
             )
-            if dy > 0:
-                door.rotation_euler[2] = 0   # +Y
-            else:
-                door.rotation_euler[2] = -math.pi  # -Y
 
         door.data.materials.append(self.materials.get_door_material())
 
@@ -342,13 +345,10 @@ class DungeonGenerator:
             
             # Randomly add barriers/doors
             if random.random() < self.config.barrier_probability:
-                # Position door slightly inside (x1, y1) room
-                offset = 0.4  # how far to push toward the room
-                mx = x2 - offset * (x2 - x1)
-                my = y2 - offset * (y2 - y1)
-                dx = x1 - x2  # direction pointing TOWARD room
-                dy = y1 - y2
-                self.mesh_creator.create_barrier(mx, my, floor, dx=dx, dy=dy)
+                # Place door at the edge of the first room (x1, y1)
+                dx = x2 - x1  # direction FROM room1 TO room2
+                dy = y2 - y1
+                self.mesh_creator.create_barrier(x1, y1, floor, dx=dx, dy=dy)
         
         return room_list
     
