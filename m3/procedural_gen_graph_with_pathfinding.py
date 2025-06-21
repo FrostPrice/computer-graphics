@@ -210,14 +210,14 @@ class MeshCreator:
             width = self.config.corridor_width
             bpy.ops.mesh.primitive_cube_add(size=1, location=(mid_x, mid_y, floor_level))
             corridor = bpy.context.active_object
-            corridor.scale = (length / 2, width / 1, self.config.corridor_height / 2)
+            corridor.scale = (length / 2 / self.config.room_spacing, width / 1, self.config.corridor_height / 2)
             corridor.name = f"Corridor_H_{x1}_{y1}_{x2}_{y2}_{z}"
         elif dy == 1:  # Vertical corridor
             length = self.config.room_size * self.config.room_spacing
             width = self.config.corridor_width
             bpy.ops.mesh.primitive_cube_add(size=1, location=(mid_x, mid_y, floor_level))
             corridor = bpy.context.active_object
-            corridor.scale = (width / 1, length / 2, self.config.corridor_height / 2)
+            corridor.scale = (width / 1, length / 2 / self.config.room_spacing, self.config.corridor_height / 2)
             corridor.name = f"Corridor_V_{x1}_{y1}_{x2}_{y2}_{z}"
         
         corridor.data.materials.append(self.materials.get_corridor_material())
