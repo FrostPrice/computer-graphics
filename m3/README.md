@@ -80,6 +80,8 @@ subprocess.check_call([
 print(f"NetworkX successfully installed to: {modules_path}")
 ```
 
+REMEMBER TO RESTART BLENDER AFTER INSTALLING NETWORKX OR ANY PACKAGES TO REFLECT CHANGES.
+
 ## 🚀 Usage
 
 ### Method 1: Run in Blender Script Editor
