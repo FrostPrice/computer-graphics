@@ -63,31 +63,21 @@ To install NetworkX in Blender's Python environment:
 ```python
 # From Blender's Python console or script
 import subprocess
-import sys
 import os
+import sys
 
-# Find the modules directory in sys.path
-modules_path = None
-for path in sys.path:
-    if path.endswith('modules') or 'modules' in path:
-        modules_path = path
-        break
+# Define target modules path explicitly
+modules_path = os.path.expanduser('~/.config/blender/4.4/scripts/modules')
 
-# If not found, look for blender config directory structure
-if not modules_path:
-    for path in sys.path:
-        if 'blender' in path.lower():
-            potential_modules = os.path.join(path, 'modules')
-            if os.path.exists(potential_modules):
-                modules_path = potential_modules
-                break
+# Create folder if it doesn't exist
+os.makedirs(modules_path, exist_ok=True)
 
-# Install NetworkX to the modules directory
-if modules_path:
-    subprocess.check_call(['pip', 'install', '--target=' + modules_path, 'networkx'])
-    print(f"NetworkX installed to: {modules_path}")
-else:
-    print("Could not find Blender's modules directory. Please check your Blender installation.")
+# Install networkx using Blender's own Python executable
+subprocess.check_call([
+    sys.executable, '-m', 'pip', 'install', '--target=' + modules_path, 'networkx'
+])
+
+print(f"NetworkX successfully installed to: {modules_path}")
 ```
 
 ## 🚀 Usage
