@@ -64,7 +64,10 @@ To install NetworkX in Blender's Python environment:
 # From Blender's Python console or script
 import subprocess
 import sys
-subprocess.check_call([sys.executable, "-m", "pip", "install", "networkx"])
+print(sys.path) # Get the blender python path with the /modules directory
+python_path = sys.path[0] # Generaly its the first path
+import pip
+subprocess.check_call(['pip', 'install', '--target=' + python_path, 'networkx'])
 ```
 
 ## 🚀 Usage
