@@ -314,24 +314,30 @@ class DungeonGenerator:
         """Generate the complete dungeon."""
         self.clear_scene()
         floor_data = {}
+        floor_graphs = {}
         
+        # Generate all floor graphs first
         for floor in range(self.config.floors):
-            floor_rooms = self._generate_floor(floor)
-            floor_data[floor] = floor_rooms
-            
-            # Add stairs to connect floors
-            if floor < self.config.floors - 1 and floor_rooms:
+            G, room_list = self.graph_gen.generate_floor_graph()
+            floor_data[floor] = room_list
+            floor_graphs[floor] = G
+        
+        # Add stairs connections between floors
+        for floor in range(self.config.floors - 1):
+            if floor_data[floor]:
                 self._add_stairs_connection(floor, floor_data)
+        
+        # Now create all the actual meshes
+        for floor in range(self.config.floors):
+            self._create_floor_meshes(floor, floor_data[floor], floor_graphs[floor])
         
         # Add key on top floor
         self._add_key_on_top_floor(floor_data)
         
         return floor_data
     
-    def _generate_floor(self, floor: int) -> List[Tuple[int, int]]:
-        """Generate a single floor of the dungeon."""
-        G, room_list = self.graph_gen.generate_floor_graph()
-        
+    def _create_floor_meshes(self, floor: int, room_list: List[Tuple[int, int]], G: nx.Graph) -> None:
+        """Create all meshes for a single floor."""
         # Create rooms
         for (x, y) in room_list:
             connected_dirs = self._get_connected_directions(x, y, room_list)
@@ -341,16 +347,40 @@ class DungeonGenerator:
         for (n1, n2) in G.edges:
             x1, y1 = n1
             x2, y2 = n2
-            self.mesh_creator.create_corridor(x1, y1, floor, x2, y2)
-            
-            # Randomly add barriers/doors
-            if random.random() < self.config.barrier_probability:
-                # Place door at the edge of the first room (x1, y1)
-                dx = x2 - x1  # direction FROM room1 TO room2
-                dy = y2 - y1
-                self.mesh_creator.create_barrier(x1, y1, floor, dx=dx, dy=dy)
+            # Only create corridor if both rooms exist on this floor
+            if (x1, y1) in room_list and (x2, y2) in room_list:
+                self.mesh_creator.create_corridor(x1, y1, floor, x2, y2)
+                
+                # Randomly add barriers/doors
+                if random.random() < self.config.barrier_probability:
+                    # Place door at the edge of the first room (x1, y1)
+                    dx = x2 - x1  # direction FROM room1 TO room2
+                    dy = y2 - y1
+                    self.mesh_creator.create_barrier(x1, y1, floor, dx=dx, dy=dy)
+    
+    def _add_stairs_connection(self, floor: int, floor_data: Dict[int, List[Tuple[int, int]]]) -> None:
+        """Add stairs to connect floors."""
+        current_floor_rooms = floor_data[floor]
+        next_floor_rooms = floor_data[floor + 1]
         
-        return room_list
+        if not current_floor_rooms:
+            return
+        
+        # Choose a room that exists on both floors for stairs, or add one
+        stair_room = None
+        
+        # First try to find a room that exists on both floors
+        common_rooms = set(current_floor_rooms) & set(next_floor_rooms)
+        if common_rooms:
+            stair_room = random.choice(list(common_rooms))
+        else:
+            # If no common room, pick from current floor and add to next floor
+            stair_room = random.choice(current_floor_rooms)
+            if stair_room not in next_floor_rooms:
+                next_floor_rooms.append(stair_room)
+        
+        # Create stairs on current floor
+        self.mesh_creator.create_stairs(*stair_room, z=floor)
     
     def _get_connected_directions(self, x: int, y: int, 
                                  room_list: List[Tuple[int, int]]) -> Set[str]:
@@ -368,23 +398,6 @@ class DungeonGenerator:
                 connections.add(dir_name)
         
         return connections
-    
-    def _add_stairs_connection(self, floor: int, floor_data: Dict[int, List[Tuple[int, int]]]) -> None:
-        """Add stairs to connect floors."""
-        current_floor_rooms = floor_data[floor]
-        if not current_floor_rooms:
-            return
-        
-        stair_room = random.choice(current_floor_rooms)
-        self.mesh_creator.create_stairs(*stair_room, z=floor)
-        
-        # Ensure the stair room exists on the next floor
-        if floor + 1 not in floor_data:
-            floor_data[floor + 1] = []
-        
-        if stair_room not in floor_data[floor + 1]:
-            floor_data[floor + 1].append(stair_room)
-            self.mesh_creator.create_room(*stair_room, z=floor + 1)
     
     def _add_key_on_top_floor(self, floor_data: Dict[int, List[Tuple[int, int]]]) -> None:
         """Add a key on the top floor."""
